@@ -57,7 +57,7 @@ contract Roulette is VRFConsumerBaseV2Plus {
     }
 
     function betOnNumber(uint256 number, uint256 amount) external payable {
-        if(number < 0 || number >= 36) revert InvalidNumber();
+        if(number < 0 || number >= 37) revert InvalidNumber();
         if(amount <= 0 && amount > 6) revert InvalidAmount();
 
         require(token_LINK.transferFrom(msg.sender, address(this), amount), "LINK Transfer failed");
@@ -87,7 +87,7 @@ contract Roulette is VRFConsumerBaseV2Plus {
     }
 
     function fulfillRandomWords(uint256 /*requestId*/, uint256[] calldata randomWords) internal override {
-        winningNumber = randomWords[0] % 36;
+        winningNumber = randomWords[0] % 37;
     }
 
     function getWinner() internal view returns(address[] memory) {
