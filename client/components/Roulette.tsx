@@ -1,314 +1,44 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
+import { FaPlus, FaMinus } from "react-icons/fa";
 import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
+import { data } from "./rouletteData";
+import { keyframes } from "@emotion/react";
+import styled from "@emotion/styled";
 
-const data = [
-  {
-    option: "0",
-    style: {
-      backgroundColor: "green",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "32",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "15",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "19",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "4",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "21",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "2",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "25",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "17",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "34",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "6",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "27",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "13",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "36",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "11",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "30",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "8",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "23",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "10",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "5",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "24",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "16",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "33",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "1",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "20",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "14",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "31",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "9",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "22",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "18",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "29",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "7",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "28",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "12",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "35",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "3",
-    style: {
-      backgroundColor: "red",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-  {
-    option: "26",
-    style: {
-      backgroundColor: "black",
-      textColor: "white",
-      fontFamily: "JetBrains Mono",
-    },
-  },
-];
+const pointerAnimation = keyframes`
+  0%, 100% {
+    transform: scale(0.25) rotate(-131deg);
+  }
+  50% {
+    transform: scale(0.25) rotate(-136deg);
+  }
+`;
+
+const StyledPointer = styled.img`
+  position: absolute;
+  top: -14rem;
+  left: 19rem;
+  z-index: 10;
+  transform: scale(0.25) rotate(-131deg);
+  transform-origin: center;
+
+  &.animate-pointer {
+    animation: ${pointerAnimation} 0.8s ease-in-out infinite;
+  }
+`;
 
 export default () => {
   const [selectedNumber, setSelectedNumber] = useState<number>(0);
+  const [betAmount, setBetAmount] = useState<number>(1);
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [hoveredNumber, setHoveredNumber] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const getRouletteColor = (num: number) => {
     if (num === 0) return "bg-[#008000]";
@@ -318,11 +48,34 @@ export default () => {
     return redNumbers.includes(num) ? "bg-[#ff0000]" : "bg-black";
   };
 
+  const getNumberOpacity = (num: number) => {
+    if (hoveredNumber === null || isSpinning) return "opacity-100 blur-none";
+    return hoveredNumber === num
+      ? "opacity-100 blur-none"
+      : "opacity-30 blur-[1px]";
+  };
+
   const handleSpinClick = useCallback(() => {
     if (!mustSpin && !isSpinning) {
       setShowConfirmation(true);
     }
   }, [mustSpin, isSpinning]);
+
+  const playSpinSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((error) => {
+        console.log("Audio playback failed:", error);
+      });
+    }
+  };
+
+  const stopSpinSound = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  };
 
   const handleConfirmedSpin = () => {
     const newPrizeNumber = Math.floor(Math.random() * data.length);
@@ -330,6 +83,7 @@ export default () => {
     setMustSpin(true);
     setIsSpinning(true);
     setShowConfirmation(false);
+    playSpinSound();
   };
 
   const handleNumberSelect = useCallback(
@@ -340,6 +94,19 @@ export default () => {
     },
     [isSpinning]
   );
+
+  const handleBetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value)) {
+      setBetAmount(Math.min(Math.max(value, 1), 5));
+    }
+  };
+
+  const adjustBetAmount = (increment: boolean) => {
+    setBetAmount((prev) =>
+      Math.min(Math.max(increment ? prev + 1 : prev - 1, 1), 5)
+    );
+  };
 
   const Modal = () => {
     const winningNumber = parseInt(data[prizeNumber].option);
@@ -437,12 +204,16 @@ export default () => {
           </h2>
           <div className="flex items-center gap-2 text-white font-mono font-bold text-lg mb-6">
             <p>
-              Are you sure you want
-              <br /> to bet on number
+              Are you sure you want to bet
+              <br />
+              <span className="mr-2 px-1 bg-white text-black rounded">
+                {betAmount}
+              </span>
+              LINK token on number
               <span
                 className={`${getRouletteColor(
                   selectedNumber
-                )} mx-1 px-1 rounded`}
+                )} mx-2 px-1 rounded`}
               >
                 {selectedNumber}
               </span>
@@ -483,6 +254,7 @@ export default () => {
         },
       }}
     >
+      <audio ref={audioRef} src="/Tracks/wheel.mp3" preload="auto" />
       <div className="gap-10 xl:gap-20 flex flex-col xl:flex-row items-center justify-center">
         <motion.div
           className="relative"
@@ -522,20 +294,24 @@ export default () => {
             spinDuration={1.2}
             startingOptionIndex={0}
             pointerProps={{
-              src: "/pointer.svg",
+              src: "/no.png",
               style: {
-                transform: "translateY(4rem) translateX(3.6rem)",
-                scale: 0.6,
-                rotate: "225deg",
+                opacity: 0,
               },
             }}
             onStopSpinning={() => {
               setMustSpin(false);
               setIsSpinning(false);
+              stopSpinSound();
               setShowModal(true);
             }}
           />
-          <img />
+          <StyledPointer
+            src="/pointer.svg"
+            className={`${
+              isSpinning ? "animate-pointer" : ""
+            } transition-all duration-300`}
+          />
         </motion.div>
 
         <motion.div
@@ -582,11 +358,13 @@ export default () => {
               <motion.button
                 whileHover={{ scale: isSpinning ? 1 : 1.02 }}
                 whileTap={{ scale: 1 }}
+                onMouseEnter={() => !isSpinning && setHoveredNumber(0)}
+                onMouseLeave={() => setHoveredNumber(null)}
                 onClick={() => handleNumberSelect(0)}
                 disabled={isSpinning}
-                className={`w-[52px] h-full bg-[#008000] text-white flex items-center justify-center ${
+                className={`w-[52px] h-full bg-[#008000] text-white flex items-center justify-center transition-all duration-200 ${
                   isSpinning ? "cursor-not-allowed" : "cursor-pointer"
-                }`}
+                } ${getNumberOpacity(0)}`}
               >
                 0
               </motion.button>
@@ -606,11 +384,17 @@ export default () => {
                             scale: isSpinning ? 1 : 1.05,
                           }}
                           whileTap={{ scale: 1 }}
+                          onMouseEnter={() =>
+                            !isSpinning && setHoveredNumber(num)
+                          }
+                          onMouseLeave={() => setHoveredNumber(null)}
                           onClick={() => handleNumberSelect(num)}
                           disabled={isSpinning}
                           className={`w-full h-full px-4 py-2 ${getRouletteColor(
                             num
-                          )} text-white block ${
+                          )} ${getNumberOpacity(
+                            num
+                          )} transition-all duration-200 text-white block ${
                             isSpinning ? "cursor-not-allowed" : "cursor-pointer"
                           }`}
                         >
@@ -644,10 +428,51 @@ export default () => {
             <input
               value={selectedNumber}
               readOnly
-              className={`w-40 text-right border-2 rounded-xl text-white font-mono font-bold text-2xl px-4 py-2 outline-none ${getRouletteColor(
+              className={`w-36 text-right border-2 rounded-xl text-white font-mono font-bold text-2xl px-4 py-2 outline-none ${getRouletteColor(
                 selectedNumber
               )}`}
             />
+          </motion.div>
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 100,
+                },
+              },
+            }}
+            className="flex w-full justify-between items-center"
+          >
+            <label className="text-white font-mono font-bold select-none text-3xl">
+              Bet amount:{" "}
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => adjustBetAmount(false)}
+                className="p-2 text-white text-center font-mono font-bold text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 rounded-xl border-2 border-neutral-400 hover:border-white duration-200"
+              >
+                <FaMinus />
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={betAmount}
+                onChange={handleBetAmountChange}
+                className="selection:text-white text-center w-12 border-2 border-neutral-400 rounded-xl text-black font-mono font-bold text-2xl py-1.5 outline-none bg-white"
+              />
+              <button
+                onClick={() => adjustBetAmount(true)}
+                className="p-2 text-white text-center font-mono font-bold text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 rounded-xl border-2 border-neutral-400 hover:border-white duration-200"
+              >
+                <FaPlus />
+              </button>
+            </div>
           </motion.div>
           <motion.button
             variants={{

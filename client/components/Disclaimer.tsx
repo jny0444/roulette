@@ -63,7 +63,7 @@ export default function Disclaimer() {
                   : "bg-neutral-700 border-2 border-neutral-700 cursor-not-allowed opacity-50"
               } px-4 py-2 rounded-lg duration-200`}
             >
-              {canAccept ? "I Accept" : "Please wait..."}
+              {canAccept ? "I Accept" : "Please read..."}
             </button>
           </motion.div>
         </motion.div>

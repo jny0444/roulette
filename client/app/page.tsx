@@ -20,7 +20,7 @@ function HomeContent() {
           <Navbar />
           <div
             id="wheel"
-            className="flex flex-row justify-center items-center h-screen"
+            className="flex flex-row justify-center items-center min-h-screen py-40"
           >
             <Roulette />
           </div>

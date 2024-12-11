@@ -2,7 +2,8 @@ import { FaVolumeUp, FaVolumeMute, FaForward } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 
 export default function Navbar() {
-  const [volume, setVolume] = useState(1); // Replace isMuted with volume
+  const [volume, setVolume] = useState(0.3); // Changed from 1 to 0.3
+  const [previousVolume, setPreviousVolume] = useState(0.3);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -33,10 +34,17 @@ export default function Navbar() {
   }, [currentTrackIndex]);
 
   const handleVolumeToggle = () => {
-    const newVolume = volume === 0 ? 1 : 0;
-    setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
+    if (volume === 0) {
+      setVolume(previousVolume);
+      if (audioRef.current) {
+        audioRef.current.volume = previousVolume;
+      }
+    } else {
+      setPreviousVolume(volume);
+      setVolume(0);
+      if (audioRef.current) {
+        audioRef.current.volume = 0;
+      }
     }
   };
 
@@ -49,7 +57,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed z-40 left-0 right-0 top-0 flex flex-row justify-between items-center bg-gradient-to-tr from-neutral-300 to-neutral-700 m-5 px-8 py-4 border-2 border-black rounded-2xl select-none">
+    <div className="fixed z-40 left-0 right-0 top-0 flex flex-row justify-between items-center bg-gradient-to-tr from-neutral-300 to-neutral-700 px-8 py-4 border-2 border-black rounded-b-3xl select-none">
       <h1 className="font-royal text-black font-black text-5xl">
         Rul-8 <span className="text-xl"> . </span>
         <span className="text-2xl font-serif font-normal text-black">
