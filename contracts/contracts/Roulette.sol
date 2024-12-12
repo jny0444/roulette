@@ -135,3 +135,13 @@ contract Roulette is VRFConsumerBaseV2Plus {
         resetBets();
     }
 }
+
+/**
+ * work on
+ * betOnNumber
+ * getWinner
+ * payWinners
+ * resetBets
+ * concludeGame
+ * and also the mappings
+ */
