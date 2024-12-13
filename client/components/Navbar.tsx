@@ -1,11 +1,13 @@
 import { FaVolumeUp, FaVolumeMute, FaForward } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
+import { connectWallet } from "@/utils/apiFeature";
 
 export default function Navbar() {
   const [volume, setVolume] = useState(0.3); // Changed from 1 to 0.3
   const [previousVolume, setPreviousVolume] = useState(0.3);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [message, setMessage] = useState('Connect Wallet')
 
   const tracks = [
     "/Tracks/Track1.mp3",
@@ -13,6 +15,50 @@ export default function Navbar() {
     "/Tracks/Track3.mp3",
     "/Tracks/Track4.mp3",
   ];
+
+  const checkIfConnected = async () => {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                setMessage(`${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+            } else {
+                setMessage('Connect Wallet');
+            }
+        } catch (err) {
+            console.error("Error checking wallet connection:", err);
+            setMessage('Connect Wallet');
+        }
+    }
+  }
+  
+  useEffect(() => {
+    checkIfConnected();
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length > 0) {
+        setMessage(`${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+      } else {
+        setMessage('Connect Wallet');
+      }
+    };
+
+    const handleChainChanged = () => {
+      window.location.reload();
+    };
+
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      }
+    };
+  }, [])
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -26,11 +72,12 @@ export default function Navbar() {
       audioRef.current.play();
     }
     audioRef.current.volume = volume;
-
+    
     return () => {
       audioRef.current?.pause();
       audioRef.current = null;
     };
+
   }, [currentTrackIndex]);
 
   const handleVolumeToggle = () => {
@@ -77,8 +124,8 @@ export default function Navbar() {
         >
           <FaForward size={24} />
         </button>
-        <button className="font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white">
-          Connect Wallet
+        <button className="font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white" onClick={connectWallet}>
+          {message}
         </button>
       </div>
     </div>

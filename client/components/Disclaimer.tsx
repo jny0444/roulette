@@ -11,7 +11,7 @@ export default function Disclaimer() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setCanAccept(true);
-    }, 3000);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);

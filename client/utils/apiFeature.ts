@@ -23,6 +23,21 @@ export const connectWallet = async () => {
     }
 }
 
+export const checkIfConnected = async () => {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                return { address: `${accounts[0]}` };
+            } else {
+                return { message: 'Connect Wallet' };
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    }
+}
+
 export const getContract = async () => {
     if(window.ethereum) {
         try {
