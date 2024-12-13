@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
@@ -39,6 +39,10 @@ export default () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [hoveredNumber, setHoveredNumber] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const winSoundRef = useRef<HTMLAudioElement | null>(null);
+  const loseSoundRef = useRef<HTMLAudioElement | null>(null);
+  const clickSoundRef = useRef<HTMLAudioElement | null>(null);
+  const betClickSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const getRouletteColor = (num: number) => {
     if (num === 0) return "bg-[#008000]";
@@ -64,9 +68,7 @@ export default () => {
   const playSpinSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch((error) => {
-        console.log("Audio playback failed:", error);
-      });
+      audioRef.current.play().catch(() => {});
     }
   };
 
@@ -90,6 +92,7 @@ export default () => {
     (num: number) => {
       if (!isSpinning) {
         setSelectedNumber(num);
+        playClickSound();
       }
     },
     [isSpinning]
@@ -103,77 +106,143 @@ export default () => {
   };
 
   const adjustBetAmount = (increment: boolean) => {
-    setBetAmount((prev) =>
-      Math.min(Math.max(increment ? prev + 1 : prev - 1, 1), 5)
+    setBetAmount((prev) => {
+      const newValue = Math.min(
+        Math.max(increment ? prev + 1 : prev - 1, 1),
+        5
+      );
+      if (newValue !== prev) {
+        playBetClickSound();
+      }
+      return newValue;
+    });
+  };
+
+  const EmojiExplosion = ({ won }: { won: boolean }) => {
+    const emojis = won
+      ? ["🎉", "🎊", "💰", "🌟", "✨"]
+      : ["😢", "💔", "😭", "🤔"];
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center pointer-events-none"
+        style={{ zIndex: 45 }}
+      >
+        {Array.from({ length: won ? 100 : 40 }).map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{
+              opacity: 1,
+              scale: 0,
+              x: 0,
+              y: 0,
+            }}
+            animate={{
+              opacity: 0,
+              scale: won ? 2 : 1.5,
+              x: (Math.random() - 0.5) * 1200,
+              y: (Math.random() - 0.5) * 1000,
+              rotate: Math.random() * 720 - 360,
+            }}
+            transition={{
+              duration: 3,
+              ease: "easeOut",
+              delay: Math.random() * 0.5,
+            }}
+            className="absolute text-4xl"
+          >
+            {emojis[Math.floor(Math.random() * emojis.length)]}
+          </motion.div>
+        ))}
+      </div>
     );
+  };
+
+  const playResultSound = (won: boolean) => {
+    const soundRef = won ? winSoundRef : loseSoundRef;
+    if (soundRef.current) {
+      soundRef.current.currentTime = 0;
+      soundRef.current.play().catch(() => {});
+    }
   };
 
   const Modal = () => {
     const winningNumber = parseInt(data[prizeNumber].option);
     const won = selectedNumber === winningNumber;
 
+    useEffect(() => {
+      if (showModal) {
+        playResultSound(won);
+      }
+    }, [showModal]);
+
     return (
       showModal && (
-        <motion.div
-          key="modal-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          onClick={() => setShowModal(false)}
-          className="select-none fixed z-50 inset-0 bg-black bg-opacity-70 flex items-center justify-center"
-        >
+        <>
+          <motion.div
+            key="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="select-none fixed z-40 inset-0 bg-black bg-opacity-70"
+          />
+          <EmojiExplosion won={won} />
           <motion.div
             key="modal-content"
             initial={{ scale: 0.5, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            transition={{
-              type: "spring",
-              damping: 25,
-              stiffness: 200,
-            }}
-            className="bg-gradient-to-tr from-neutral-900 to-neutral-800 p-8 rounded-xl border-2 border-white"
+            className="fixed z-50 inset-0 flex items-center justify-center"
+            onClick={() => setShowModal(false)}
           >
-            <h2 className="text-white font-mono font-bold text-2xl mb-6">
-              Results
-            </h2>
-            <div className="font-mono font-bold text-lg">
-              <div className="flex justify-between items-center gap-5">
-                <p className="text-white">Your bet: </p>
-                <span
-                  className={`${getRouletteColor(
-                    selectedNumber
-                  )} w-12 py-1 rounded text-white text-center`}
-                >
-                  {selectedNumber}
-                </span>
-              </div>
-              <div className="flex justify-between items-center gap-5 mt-2">
-                <p className="text-white">Winning number: </p>
-                <span
-                  className={`${getRouletteColor(
-                    winningNumber
-                  )} w-12 py-1 rounded text-white text-center`}
-                >
-                  {winningNumber}
-                </span>
-              </div>
-              <p
-                className={`text-2xl mt-6 font-bold ${
-                  won ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                {won ? "Congratulations!!!" : "Better luck next time!"}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-4 w-full font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white"
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              transition={{
+                type: "spring",
+                damping: 25,
+                stiffness: 200,
+              }}
+              className="bg-gradient-to-tr from-neutral-900 to-neutral-800 p-8 w-[400px] rounded-xl border-2 border-white"
             >
-              Close
-            </button>
+              <h2 className="text-white font-mono font-bold text-2xl mb-6">
+                Results
+              </h2>
+              <div className="font-mono font-bold text-lg">
+                <div className="flex justify-between items-center gap-5">
+                  <p className="text-white">Your bet: </p>
+                  <span
+                    className={`${getRouletteColor(
+                      selectedNumber
+                    )} w-12 py-1 rounded text-white text-center`}
+                  >
+                    {selectedNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center gap-5 mt-2">
+                  <p className="text-white">Winning number: </p>
+                  <span
+                    className={`${getRouletteColor(
+                      winningNumber
+                    )} w-12 py-1 rounded text-white text-center`}
+                  >
+                    {winningNumber}
+                  </span>
+                </div>
+                <p
+                  className={`text-2xl mt-6 font-bold text-center whitespace-nowrap ${
+                    won ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {won ? "Congratulations !!" : "Better luck next time"}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="mt-4 w-full font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white"
+              >
+                Close
+              </button>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </>
       )
     );
   };
@@ -238,6 +307,20 @@ export default () => {
       </motion.div>
     );
 
+  const playClickSound = () => {
+    if (clickSoundRef.current) {
+      clickSoundRef.current.currentTime = 0;
+      clickSoundRef.current.play().catch(() => {});
+    }
+  };
+
+  const playBetClickSound = () => {
+    if (betClickSoundRef.current) {
+      betClickSoundRef.current.currentTime = 0;
+      betClickSoundRef.current.play().catch(() => {});
+    }
+  };
+
   return (
     <motion.div
       initial="hidden"
@@ -254,7 +337,11 @@ export default () => {
         },
       }}
     >
-      <audio ref={audioRef} src="/Tracks/wheel.mp3" preload="auto" />
+      <audio ref={audioRef} src="/Sounds/wheel.mp3" preload="auto" />
+      <audio ref={winSoundRef} src="/Sounds/win.mp3" preload="auto" />
+      <audio ref={loseSoundRef} src="/Sounds/lose.mp3" preload="auto" />
+      <audio ref={clickSoundRef} src="/Sounds/number.wav" preload="auto" />
+      <audio ref={betClickSoundRef} src="/Sounds/bet.wav" preload="auto" />
       <div className="gap-10 xl:gap-20 flex flex-col xl:flex-row items-center justify-center">
         <motion.div
           className="relative"
@@ -356,7 +443,7 @@ export default () => {
           >
             <div className="border-y-2 border-l-2">
               <motion.button
-                whileHover={{ scale: isSpinning ? 1 : 1.02 }}
+                whileHover={{ scale: isSpinning ? 1 : 1.03 }}
                 whileTap={{ scale: 1 }}
                 onMouseEnter={() => !isSpinning && setHoveredNumber(0)}
                 onMouseLeave={() => setHoveredNumber(null)}
@@ -381,7 +468,7 @@ export default () => {
                       <td key={num} className="border-2 p-0">
                         <motion.button
                           whileHover={{
-                            scale: isSpinning ? 1 : 1.05,
+                            scale: isSpinning ? 1 : 1.03,
                           }}
                           whileTap={{ scale: 1 }}
                           onMouseEnter={() =>

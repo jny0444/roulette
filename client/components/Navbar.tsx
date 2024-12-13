@@ -57,7 +57,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed z-40 left-0 right-0 top-0 flex flex-row justify-between items-center bg-gradient-to-tr from-neutral-300 to-neutral-700 px-8 py-4 border-2 border-black rounded-b-3xl select-none">
+    <div className="fixed z-40 left-0 right-0 top-0 flex flex-row justify-between items-center bg-gradient-to-tr from-neutral-300 to-neutral-700 px-8 py-4 border-b-4 border-black rounded-b-3xl select-none">
       <h1 className="font-royal text-black font-black text-5xl">
         Rul-8 <span className="text-xl"> . </span>
         <span className="text-2xl font-serif font-normal text-black">

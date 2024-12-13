@@ -46,13 +46,14 @@ export default function Disclaimer() {
             </h2>
             <p className="text-white font-mono mb-6 text-justify">
               This game involves an element of{" "}
-              <span className="font-bold">financial risk</span> and may be{" "}
-              <span className="font-bold">addictive</span>.
+              <span className="font-bold">
+                {`"`}financial risk{`"`}
+              </span>{" "}
+              and may be <span className="font-bold">addictive</span>.
               <br />
               <br /> Please play RESPONSIBLY and at your own RISK.
               <br />
-              <br /> By continuing, you acknowledge that real money is on the
-              line.
+              <br /> By continuing, you acknowledge that you can lose tokens.
             </p>
             <button
               onClick={handleAccept}
