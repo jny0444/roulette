@@ -297,7 +297,7 @@ const Roulette = () => {
           </div>
           <div className="flex flex-col gap-4">
             <button
-              onClick={handleConfirmedSpin}
+              onClick={handleConfirmedSpin} // 🇮🇳🪙
               className="flex-1 font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white"
             >
               Confirm
