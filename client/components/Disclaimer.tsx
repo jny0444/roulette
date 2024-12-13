@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence, backInOut } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGame } from "@/context/GameContext";
 
 export default function Disclaimer() {

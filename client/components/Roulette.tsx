@@ -1,11 +1,17 @@
 "use client";
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { FaPlus, FaMinus } from "react-icons/fa";
-import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
+import dynamic from 'next/dynamic';
 import { data } from "./rouletteData";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
+
+// Dynamic import of the Wheel component
+const Wheel = dynamic(
+  () => import('react-custom-roulette').then((mod) => mod.Wheel),
+  { ssr: false, loading: () => <div className="w-[500px] h-[500px] rounded-full bg-neutral-800 animate-pulse" /> }
+);
 
 const pointerAnimation = keyframes`
   0%, 100% {
@@ -29,7 +35,7 @@ const StyledPointer = styled.img`
   }
 `;
 
-export default () => {
+const Roulette = () => {
   const [selectedNumber, setSelectedNumber] = useState<number>(0);
   const [betAmount, setBetAmount] = useState<number>(1);
   const [mustSpin, setMustSpin] = useState(false);
@@ -173,7 +179,7 @@ export default () => {
       if (showModal) {
         playResultSound(won);
       }
-    }, [showModal]);
+    }, [showModal, won]);
 
     return (
       showModal && (
@@ -592,3 +598,6 @@ export default () => {
     </motion.div>
   );
 };
+
+Roulette.displayName = 'Roulette';
+export default Roulette;
