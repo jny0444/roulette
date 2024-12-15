@@ -29,7 +29,7 @@ const StyledPointer = styled.img`
   }
 `;
 
-export default () => {
+const Roulette = () => {
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([0]);
   const [betAmount, setBetAmount] = useState<number>(1);
   const [mustSpin, setMustSpin] = useState(false);
@@ -37,7 +37,6 @@ export default () => {
   const [showModal, setShowModal] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [hoveredNumber, setHoveredNumber] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const winSoundRef = useRef<HTMLAudioElement | null>(null);
   const loseSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -484,8 +483,6 @@ export default () => {
               <motion.button
                 whileHover={{ scale: isSpinning ? 1 : 1.03 }}
                 whileTap={{ scale: 1 }}
-                onMouseEnter={() => !isSpinning && setHoveredNumber(0)}
-                onMouseLeave={() => setHoveredNumber(null)}
                 onClick={() => handleNumberSelect(0)}
                 disabled={isSpinning}
                 className={`w-[52px] h-full bg-[#008000] text-white flex items-center justify-center transition-all duration-200 ${
@@ -510,10 +507,6 @@ export default () => {
                             scale: isSpinning ? 1 : 1.03,
                           }}
                           whileTap={{ scale: 1 }}
-                          onMouseEnter={() =>
-                            !isSpinning && setHoveredNumber(num)
-                          }
-                          onMouseLeave={() => setHoveredNumber(null)}
                           onClick={() => handleNumberSelect(num)}
                           disabled={isSpinning}
                           className={`w-full h-full px-4 py-2 ${getRouletteColor(
@@ -644,3 +637,8 @@ export default () => {
     </motion.div>
   );
 };
+
+// Add display name
+Roulette.displayName = 'Roulette';
+
+export default Roulette;
