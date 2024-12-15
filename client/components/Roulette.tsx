@@ -1,17 +1,11 @@
 "use client";
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { FaPlus, FaMinus } from "react-icons/fa";
+import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
+import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
-import dynamic from 'next/dynamic';
 import { data } from "./rouletteData";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-
-// Dynamic import of the Wheel component
-const Wheel = dynamic(
-  () => import('react-custom-roulette').then((mod) => mod.Wheel),
-  { ssr: false, loading: () => <div className="w-[500px] h-[500px] rounded-full bg-neutral-800 animate-pulse" /> }
-);
 
 const pointerAnimation = keyframes`
   0%, 100% {
@@ -35,8 +29,8 @@ const StyledPointer = styled.img`
   }
 `;
 
-const Roulette = () => {
-  const [selectedNumber, setSelectedNumber] = useState<number>(0);
+export default () => {
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([0]);
   const [betAmount, setBetAmount] = useState<number>(1);
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
@@ -59,10 +53,10 @@ const Roulette = () => {
   };
 
   const getNumberOpacity = (num: number) => {
-    if (hoveredNumber === null || isSpinning) return "opacity-100 blur-none";
-    return hoveredNumber === num
-      ? "opacity-100 blur-none"
-      : "opacity-30 blur-[1px]";
+    if (isSpinning && !selectedNumbers.includes(num)) {
+      return "opacity-30 blur-[1px]";
+    }
+    return "opacity-100 blur-none";
   };
 
   const handleSpinClick = useCallback(() => {
@@ -97,7 +91,17 @@ const Roulette = () => {
   const handleNumberSelect = useCallback(
     (num: number) => {
       if (!isSpinning) {
-        setSelectedNumber(num);
+        setSelectedNumbers((prev) => {
+          if (prev.includes(num)) {
+            // If number is already selected, remove it
+            const newNumbers = prev.filter((n) => n !== num);
+            return newNumbers.length === 0 ? [0] : newNumbers;
+          } else if (prev.length < 5) {
+            // Add new number if under limit
+            return prev[0] === 0 ? [num] : [...prev, num];
+          }
+          return prev;
+        });
         playClickSound();
       }
     },
@@ -171,15 +175,34 @@ const Roulette = () => {
     }
   };
 
+  const stopResultSounds = () => {
+    if (winSoundRef.current) {
+      winSoundRef.current.pause();
+      winSoundRef.current.currentTime = 0;
+    }
+    if (loseSoundRef.current) {
+      loseSoundRef.current.pause();
+      loseSoundRef.current.currentTime = 0;
+    }
+  };
+
   const Modal = () => {
     const winningNumber = parseInt(data[prizeNumber].option);
-    const won = selectedNumber === winningNumber;
+    const won = selectedNumbers.includes(winningNumber);
 
     useEffect(() => {
       if (showModal) {
         playResultSound(won);
       }
-    }, [showModal, won]);
+      return () => {
+        stopResultSounds();
+      };
+    }, [showModal]);
+
+    const handleCloseModal = () => {
+      stopResultSounds();
+      setShowModal(false);
+    };
 
     return (
       showModal && (
@@ -197,7 +220,7 @@ const Roulette = () => {
             initial={{ scale: 0.5, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             className="fixed z-50 inset-0 flex items-center justify-center"
-            onClick={() => setShowModal(false)}
+            onClick={handleCloseModal}
           >
             <motion.div
               onClick={(e) => e.stopPropagation()}
@@ -206,7 +229,7 @@ const Roulette = () => {
                 damping: 25,
                 stiffness: 200,
               }}
-              className="bg-gradient-to-tr from-neutral-900 to-neutral-800 p-8 w-[400px] rounded-xl border-2 border-white"
+              className="bg-gradient-to-tr from-neutral-900 to-neutral-800 p-8 rounded-xl border-2 border-white"
             >
               <h2 className="text-white font-mono font-bold text-2xl mb-6">
                 Results
@@ -214,20 +237,25 @@ const Roulette = () => {
               <div className="font-mono font-bold text-lg">
                 <div className="flex justify-between items-center gap-5">
                   <p className="text-white">Your bet: </p>
-                  <span
-                    className={`${getRouletteColor(
-                      selectedNumber
-                    )} w-12 py-1 rounded text-white text-center`}
-                  >
-                    {selectedNumber}
-                  </span>
+                  <div className="flex gap-1 flex-wrap">
+                    {selectedNumbers.map((num) => (
+                      <span
+                        key={num}
+                        className={`${getRouletteColor(
+                          num
+                        )} px-2 rounded text-white font-mono font-bold`}
+                      >
+                        {num}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center gap-5 mt-2">
+                <div className="flex justify-between items-center gap-5 mt-4">
                   <p className="text-white">Winning number: </p>
                   <span
                     className={`${getRouletteColor(
                       winningNumber
-                    )} w-12 py-1 rounded text-white text-center`}
+                    )} px-2 rounded text-white text-center`}
                   >
                     {winningNumber}
                   </span>
@@ -241,7 +269,7 @@ const Roulette = () => {
                 </p>
               </div>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 className="mt-4 w-full font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white"
               >
                 Close
@@ -281,23 +309,23 @@ const Roulette = () => {
             <p>
               Are you sure you want to bet
               <br />
-              <span className="mr-2 px-1 bg-white text-black rounded">
-                {betAmount}
-              </span>
-              LINK token on number
-              <span
-                className={`${getRouletteColor(
-                  selectedNumber
-                )} mx-2 px-1 rounded`}
-              >
-                {selectedNumber}
-              </span>
-              ?
+              <span className="font-bold">{betAmount}</span> LINK token on the
+              number(s)
+              <div className="flex gap-1 mt-2 p-1 bg-white rounded w-fit flex-wrap">
+                {selectedNumbers.map((num) => (
+                  <span
+                    key={num}
+                    className={`${getRouletteColor(num)} px-2 rounded`}
+                  >
+                    {num}
+                  </span>
+                ))}
+              </div>
             </p>
           </div>
           <div className="flex flex-col gap-4">
             <button
-              onClick={handleConfirmedSpin} // 🇮🇳🪙
+              onClick={handleConfirmedSpin}
               className="flex-1 font-mono text-white text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 px-4 py-2 rounded-lg border-2 border-black duration-200 hover:border-white"
             >
               Confirm
@@ -325,6 +353,11 @@ const Roulette = () => {
       betClickSoundRef.current.currentTime = 0;
       betClickSoundRef.current.play().catch(() => {});
     }
+  };
+
+  const clearSelectedNumbers = () => {
+    setSelectedNumbers([0]);
+    playBetClickSound(); // Changed from playClickSound to playBetClickSound
   };
 
   return (
@@ -515,16 +548,29 @@ const Roulette = () => {
             }}
             className="flex w-full justify-between items-center"
           >
-            <label className="text-white font-mono font-bold select-none text-3xl">
-              Placing bet on:{" "}
+            <label className="text-white font-mono font-bold select-none text-3xl min-w-fit">
+              Placing bet on:
             </label>
-            <input
-              value={selectedNumber}
-              readOnly
-              className={`w-36 text-right border-2 rounded-xl text-white font-mono font-bold text-2xl px-4 py-2 outline-none ${getRouletteColor(
-                selectedNumber
-              )}`}
-            />
+            <div className="flex items-center gap-3 justify-end flex-1">
+              <div className="flex gap-1.5 text-xl p-1.5 bg-white rounded border-2 border-neutral-400 flex-wrap justify-end">
+                {selectedNumbers.map((num) => (
+                  <span
+                    key={num}
+                    className={`${getRouletteColor(
+                      num
+                    )} px-3 py-1 rounded text-white font-mono font-bold`}
+                  >
+                    {num}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={clearSelectedNumbers}
+                className="p-2 text-white text-center font-mono font-bold text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 rounded-xl border-2 border-neutral-400 hover:border-white duration-200"
+              >
+                <FaTimes />
+              </button>
+            </div>
           </motion.div>
           <motion.div
             variants={{
@@ -544,7 +590,7 @@ const Roulette = () => {
             <label className="text-white font-mono font-bold select-none text-3xl">
               Bet amount:{" "}
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => adjustBetAmount(false)}
                 className="p-2 text-white text-center font-mono font-bold text-xl bg-black hover:bg-gradient-to-tr from-black to-neutral-700 rounded-xl border-2 border-neutral-400 hover:border-white duration-200"
@@ -557,7 +603,7 @@ const Roulette = () => {
                 max="5"
                 value={betAmount}
                 onChange={handleBetAmountChange}
-                className="selection:text-white text-center w-12 border-2 border-neutral-400 rounded-xl text-black font-mono font-bold text-2xl py-1.5 outline-none bg-white"
+                className="selection:text-white text-center w-12 border-2 border-neutral-400 rounded text-black font-mono font-bold text-2xl py-1.5 outline-none bg-white"
               />
               <button
                 onClick={() => adjustBetAmount(true)}
@@ -598,6 +644,3 @@ const Roulette = () => {
     </motion.div>
   );
 };
-
-Roulette.displayName = 'Roulette';
-export default Roulette;
