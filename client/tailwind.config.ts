@@ -8,9 +8,9 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        mono: ["JetBrains Mono"],
-        royal: ["Imperial Script"],
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
       },
     },
   },

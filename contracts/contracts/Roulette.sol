@@ -23,17 +23,6 @@ contract Roulette is VRFConsumerBaseV2Plus {
 
     uint256 public winningNumber;
 
-    /** mapping for each address to different number
-     *  and how much they are betting on each number 
-     *  number -> (address -> amount)
-     * 
-    */
-    // mapping(uint256 => mapping(address => uint256)) public bets;
-    /** mapping for number to the address of betters on that number 
-     *  number -> [address1, address2, ...]
-    */
-    // mapping(uint256 => address[]) public bettors;
-
     struct Bet {
         address better;
         uint256 amount;
@@ -63,19 +52,6 @@ contract Roulette is VRFConsumerBaseV2Plus {
         return token_LINK.balanceOf(address(this));
     }
 
-    // function betOnNumber(uint256 number, uint256 amount) external payable {
-    //     if(number < 0 || number >= 37) revert InvalidNumber();
-    //     if(amount <= 0 && amount > 6) revert InvalidAmount();
-
-    //     require(token_LINK.transferFrom(msg.sender, address(this), amount), "LINK Transfer failed");
-
-    //     if(bets[number][msg.sender] == 0) {
-    //         bettors[number].push(msg.sender);
-    //     }
-
-    //     bets[number][msg.sender] += amount;        
-    // }
-
     function betOnNumber(uint256 number, uint256 amount) external {
         if (number < 0 || number > 36) revert InvalidNumber();
         if (amount <= 0 || amount > 6) revert InvalidAmount();
@@ -86,18 +62,20 @@ contract Roulette is VRFConsumerBaseV2Plus {
     }
 
     function getNumber() external onlyOwner returns(uint256 requestId) {
-        requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({
-            keyHash: s_keyHash,
-            subId: s_subscriptionId,
-            requestConfirmations: s_requestConfirmations,
-            callbackGasLimit: s_callbackGasLimit,
-            numWords: s_numWords,
-            extraArgs: VRFV2PlusClient._argsToBytes(
-                VRFV2PlusClient.ExtraArgsV1({
-                    nativePayment: false
-                })
-            )
-        }));
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: s_requestConfirmations,
+                callbackGasLimit: s_callbackGasLimit,
+                numWords: s_numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({
+                        nativePayment: false
+                    })
+                )
+            })
+        );
 
         return requestId;
     }
@@ -106,53 +84,14 @@ contract Roulette is VRFConsumerBaseV2Plus {
         winningNumber = randomWords[0] % 37;
     }
 
-    // function getWinner() internal view returns(address[] memory) {
-    //     address[] memory tempWinners = new address[](bettors[winningNumber].length);
-    //     uint256 count = 0;
-
-    //     for(uint256 i = 0; i < bettors[winningNumber].length; i++) {
-    //         address bettor = bettors[winningNumber][i];
-    //         if(bets[winningNumber][bettor] > 0) {
-    //             tempWinners[count] = bettor;
-    //             count++;
-    //         }
-    //     }
-
-    //     address[] memory winners = new address[](count);
-
-    //     for(uint256 j = 0; j < count; j++) {
-    //         winners[j] = tempWinners[j];
-    //     }
-
-    //     return winners;
-    // }
-
     function getWinner() internal view returns(address) {
         return bets[winningNumber].better;
     }
-
-    // function payWinners(address[] memory _winners) internal {
-    //     for(uint256 i = 0; i < _winners.length; i++) {
-    //         address winner = _winners[i];
-    //         uint256 payout = bets[winningNumber][winner] * 5;
-    //         require(token_LINK.transfer(winner, payout), "LINK Transfer failed");
-    //     }
-    // }
 
     function payWinner(address _winner) internal {
         uint256 payout = bets[winningNumber].amount * 5;
         require(token_LINK.transfer(_winner, payout), "LINK Transfer failed");
     }
-
-    // function resetBets() internal {
-    //     for(uint256 i = 0; i<36; i++) {
-    //         address[] memory currentBettors = bettors[i];
-    //         for(uint256 j = 0; j<currentBettors.length; j++) {
-    //             delete bets[i][currentBettors[j]];
-    //         }
-    //         delete bettors[i];
-    //     }
-    // }
 
     function resetBetArray() internal {
         for(uint256 i = 0; i < 37; i++) {
@@ -160,25 +99,9 @@ contract Roulette is VRFConsumerBaseV2Plus {
         }
     }
 
-    // function concludeGame() external onlyOwner {
-    //     address[] memory winners = getWinner();
-    //     payWinners(winners);
-    //     resetBets();
-    // }
-
     function endGame() external {
         address winningPlayer = getWinner();
         payWinner(winningPlayer);
         resetBetArray();
     }
 }
-
-/**
- * work on
- * betOnNumber
- * getWinner
- * payWinners
- * resetBets
- * concludeGame
- * and also the mappings
- */
