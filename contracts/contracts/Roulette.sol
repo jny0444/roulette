@@ -19,7 +19,7 @@ contract Roulette is VRFConsumerBaseV2Plus {
     uint256 private s_subscriptionId;
     uint16 private s_requestConfirmations = 3;
     uint32 private s_callbackGasLimit = 500000;
-    uint32 private s_numWords = 1;
+    uint32 private s_numWords = 2;
 
     uint256 public winningNumber;
 
@@ -38,7 +38,7 @@ contract Roulette is VRFConsumerBaseV2Plus {
         s_subscriptionId = subscriptionId;
     }
 
-    receive() external payable {}  // Fund the contract
+    receive() external payable {}  // Fund the contract with ether
 
     function fundContractWithLink(uint256 amount) external onlyOwner {
         require(token_LINK.transferFrom(msg.sender, address(this), amount), "LINK Transfer failed");
